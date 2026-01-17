@@ -1,0 +1,68 @@
+version: '3.9'
+
+services:
+# Gateway service
+  gateway-service:
+    build: ./api-gateway
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    networks:
+      - moustass-network
+
+# Auth Service
+  auth-db:
+    image: mysql:8
+    container_name: auth-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: user_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - auth_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - moustass-network
+
+  auth-service:
+    build: ./services/auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://auth-db:3306/user_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    networks:
+      - moustass-network
+    
+  # FRONTEND (Next.js)
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://gateway-service:8080
+    depends_on:
+      - gateway-service
+    networks:
+    - moustass-network
+
+networks:
+  moustass-network:
+    driver: bridge
+
+volumes:
+  auth_data:
+
+

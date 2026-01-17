@@ -4,13 +4,14 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Lock, Eye, EyeOff, CheckCircle, XCircle, AlertTriangle, Shield } from "lucide-react"
+import { Lock, Eye, EyeOff, CheckCircle, XCircle, AlertTriangle, Shield, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
+import { authService } from "@/lib/services/auth.service"
 
 const passwordRules = [
   { id: "length", label: "Au moins 12 caractères", test: (pwd: string) => pwd.length >= 12 },
@@ -27,13 +28,14 @@ const passwordRules = [
 export function ChangePasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const isFirstLogin = searchParams.get("first") === "true"
+  const isFirstLogin = searchParams.get("first") === "true" || authService.getFirstLogin()
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     currentPassword: "",
@@ -54,12 +56,34 @@ export function ChangePasswordForm() {
     if (!allRulesPassed || !passwordsMatch) return
 
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setSuccess(true)
+    setError(null)
 
-    setTimeout(() => {
-      router.push("/")
-    }, 2000)
+    try {
+      const userName = authService.getUserName()
+      if (!userName) {
+        setError("Nom d'utilisateur introuvable. Veuillez vous reconnecter.")
+        setIsLoading(false)
+        return
+      }
+
+      await authService.changePassword({
+        username: userName,
+        oldPassword: formData.currentPassword,
+        newPassword: formData.newPassword,
+      })
+
+      setSuccess(true)
+
+      // Déconnexion et redirection vers login après changement de mot de passe
+      setTimeout(() => {
+        authService.logout()
+        router.push("/login")
+      }, 2000)
+    } catch (err: any) {
+      const errorMessage = err.response?.data || err.message || "Erreur lors du changement de mot de passe"
+      setError(typeof errorMessage === "string" ? errorMessage : "Erreur de changement")
+      setIsLoading(false)
+    }
   }
 
   if (success) {
@@ -112,36 +136,44 @@ export function ChangePasswordForm() {
           <CardContent>
             {isFirstLogin && (
               <Alert className="mb-4 bg-yellow-500/10 border-yellow-500/30">
-                <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                <AlertDescription className="text-yellow-200">
+                <AlertTriangle className="h-4 w-4 text-black-500" />
+                <AlertDescription className="text-black-200">
                   Première connexion détectée. Veuillez créer un mot de passe personnel.
                 </AlertDescription>
               </Alert>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {!isFirstLogin && (
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Mot de passe actuel</Label>
-                  <div className="relative">
-                    <Input
-                      id="currentPassword"
-                      type={showCurrentPassword ? "text" : "password"}
-                      value={formData.currentPassword}
-                      onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-                      required
-                      className="bg-input border-border pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
+
+              <div className="space-y-2">
+                <Label htmlFor="currentPassword">
+                  {isFirstLogin ? "Mot de passe temporaire" : "Mot de passe actuel"}
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="currentPassword"
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={formData.currentPassword}
+                    onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
+                    required
+                    placeholder={isFirstLogin ? "Saisissez le mot de passe temporaire" : ""}
+                    className="bg-input border-border pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="newPassword">Nouveau mot de passe</Label>
@@ -221,12 +253,12 @@ export function ChangePasswordForm() {
         <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 text-primary" />
-            <span>Chiffrement RSA-4096</span>
+            <span>Chiffrement RSA</span>
           </div>
           <div className="h-3 w-px bg-border" />
           <div className="flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 text-primary" />
-            <span>Hashage Argon2id</span>
+            <span>SHA-256</span>
           </div>
         </div>
       </div>

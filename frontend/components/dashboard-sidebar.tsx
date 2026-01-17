@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -19,12 +19,13 @@ import {
   Banknote,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { authService } from "@/lib/services/auth.service"
 
-const navigation = [
-  { name: "Tableau de bord", href: "/", icon: LayoutDashboard },
-  { name: "Ordres de virement", href: "/virements", icon: Banknote },
-  { name: "Messages Vidéo", href: "/messages", icon: Video },
-  { name: "Utilisateurs", href: "/users", icon: Users },
+const allNavigationItems = [
+  { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "USER"] },
+  { name: "Ordres de virement", href: "/virements", icon: Banknote, roles: ["ADMIN", "USER"] },
+  { name: "Messages Vidéo", href: "/messages", icon: Video, roles: ["ADMIN", "USER"] },
+  { name: "Utilisateurs", href: "/users", icon: Users, roles: ["ADMIN"] },
   // { name: "Gestion des Clés", href: "/keys", icon: Key },
   // { name: "Notifications", href: "/notifications", icon: Bell },
   // { name: "Journal d'Audit", href: "/audit", icon: FileText },
@@ -34,7 +35,19 @@ const navigation = [
 
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false)
+  const [userRole, setUserRole] = useState<string | null>(null)
   const pathname = usePathname()
+
+  useEffect(() => {
+    // Récupérer le rôle de l'utilisateur depuis localStorage (côté client uniquement)
+    setUserRole(authService.getRole())
+  }, [])
+
+  // Filtrer les éléments de navigation selon le rôle
+  const navigation = allNavigationItems.filter((item) => {
+    if (!userRole) return false
+    return item.roles.includes(userRole)
+  })
 
   return (
     <aside
