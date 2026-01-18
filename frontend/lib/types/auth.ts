@@ -12,6 +12,7 @@ export interface AuthResponse {
 
 export interface JwtPayload {
   sub?: string; // Subject (username)
+  userId?: string | number; // User ID
   userName?: string;
   role?: string;
   firstLogin?: boolean;

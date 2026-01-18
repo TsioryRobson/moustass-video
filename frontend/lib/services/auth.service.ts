@@ -1,30 +1,20 @@
-import { jwtDecode } from "jwt-decode";
 import api from "@/lib/axios";
+import {
+  decodeToken,
+  getTokenPayload,
+  getToken as getTokenUtil,
+  getUserId as getUserIdUtil,
+  getUserName as getUserNameUtil,
+  getRole as getRoleUtil,
+  isAuthenticated as isAuthenticatedUtil,
+} from "@/lib/utils/jwt.utils";
 import type {
   LoginUserDto,
   AuthResponse,
   UserDto,
   RegisterUserDto,
   ChangeMdpDto,
-  JwtPayload,
 } from "@/lib/types/auth";
-
-// Fonction utilitaire pour décoder le token JWT
-const decodeToken = (token: string): JwtPayload | null => {
-  try {
-    return jwtDecode<JwtPayload>(token);
-  } catch (error) {
-    console.error("Erreur lors du décodage du token:", error);
-    return null;
-  }
-};
-
-// Fonction pour obtenir le payload du token actuel
-const getTokenPayload = (): JwtPayload | null => {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-  return decodeToken(token);
-};
 
 export const authService = {
   async login(credentials: LoginUserDto): Promise<AuthResponse> {
@@ -52,17 +42,19 @@ export const authService = {
   },
 
   getToken(): string | null {
-    return localStorage.getItem("token");
+    return getTokenUtil();
   },
 
   getUserName(): string | null {
-    const payload = getTokenPayload();
-    return payload?.userName || payload?.sub || null;
+    return getUserNameUtil();
+  },
+
+  getUserId(): string | null {
+    return getUserIdUtil();
   },
 
   getRole(): string | null {
-    const payload = getTokenPayload();
-    return payload?.role || null;
+    return getRoleUtil();
   },
 
   getFirstLogin(): boolean {
@@ -71,15 +63,7 @@ export const authService = {
   },
 
   isAuthenticated(): boolean {
-    const token = this.getToken();
-    if (!token) return false;
-
-    // Vérifier si le token est expiré
-    const payload = decodeToken(token);
-    if (!payload || !payload.exp) return true; // Si pas d'expiration, considérer comme valide
-
-    const currentTime = Date.now() / 1000;
-    return payload.exp > currentTime;
+    return isAuthenticatedUtil();
   },
 
   saveAuthData(authResponse: AuthResponse): void {
