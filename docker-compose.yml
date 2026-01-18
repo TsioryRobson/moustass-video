@@ -44,6 +44,43 @@ services:
         condition: service_healthy
     networks:
       - moustass-network
+
+# Key Service
+  kms-db:
+    image: mysql:8
+    container_name: kms-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: kms_db
+    ports:
+      - "3310:3306"
+    volumes:
+      - kms_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - moustass-network
+
+  kms-service:
+    build: ./services/kms-service
+    container_name: kms-service
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./services/kms-service/.env:/app/.env:ro
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://kms-db:3306/kms_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      kms-db:
+        condition: service_healthy
+    networks:
+      - moustass-network
     
   # FRONTEND (Next.js)
   frontend:
@@ -64,5 +101,6 @@ networks:
 
 volumes:
   auth_data:
+  kms_data:
 
 

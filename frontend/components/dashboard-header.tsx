@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Bell, Search, User, LogOut } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { Bell, User, LogOut, Shield, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -46,10 +45,15 @@ export function DashboardHeader() {
 
   return (
     <header className="flex items-center justify-between h-16 px-6 border-b border-border bg-background">
-      <div className="flex items-center gap-4 flex-1 max-w-md">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Rechercher..." className="pl-9 bg-secondary border-border" />
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+          <Shield className="w-4 h-4 text-emerald-500" />
+          <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Système sécurisé</span>
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+        </div>
+        <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Toutes les connexions sont chiffrées</span>
         </div>
       </div>
 

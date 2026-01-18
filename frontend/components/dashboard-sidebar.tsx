@@ -24,9 +24,8 @@ import { authService } from "@/lib/services/auth.service"
 const allNavigationItems = [
   { name: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard, roles: ["ADMIN", "USER"] },
   { name: "Ordres de virement", href: "/virements", icon: Banknote, roles: ["ADMIN", "USER"] },
-  { name: "Messages Vidéo", href: "/messages", icon: Video, roles: ["ADMIN", "USER"] },
+  { name: "Gestion key", href: "/keys", icon: Key, roles: ["USER"] },
   { name: "Utilisateurs", href: "/users", icon: Users, roles: ["ADMIN"] },
-  // { name: "Gestion des Clés", href: "/keys", icon: Key },
   // { name: "Notifications", href: "/notifications", icon: Bell },
   // { name: "Journal d'Audit", href: "/audit", icon: FileText },
   // { name: "Sécurité", href: "/security", icon: Shield },

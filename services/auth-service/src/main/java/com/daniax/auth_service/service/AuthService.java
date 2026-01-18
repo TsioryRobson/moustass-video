@@ -60,7 +60,7 @@ public class AuthService {
             User user = userRepository.findByUserName(loginUserDto.getUserName());
 
             // Générer le token
-            String token = jwtUtils.generateToken(user.getUserName(), user.getRole().name(), user.getFirstLogin());
+            String token = jwtUtils.generateToken(user.getId(), user.getUserName(), user.getRole().name(), user.getFirstLogin());
 
             return new AuthResponse(
                     token,
