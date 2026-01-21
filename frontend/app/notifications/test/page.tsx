@@ -1,9 +1,8 @@
-"use client"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
-import { TransferOrderForm } from "@/components/transfer-order-form"
+import { NotificationTest } from "@/components/notification-test"
 
-export default function VirementsPage() {
+export default function NotificationTestPage() {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
@@ -11,13 +10,12 @@ export default function VirementsPage() {
         <DashboardHeader />
         <main className="flex-1 p-6 space-y-6 overflow-auto">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">Création d'ordre de virement</h1>
+            <h1 className="text-2xl font-semibold text-foreground">Test des Notifications</h1>
             <p className="text-muted-foreground mt-1">
-              Initier un nouveau virement sécurisé avec authentification vidéo
+              Créez et testez les notifications pour vérifier le fonctionnement du service
             </p>
           </div>
-
-          <TransferOrderForm />
+          <NotificationTest />
         </main>
       </div>
     </div>

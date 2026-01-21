@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Bell, User, LogOut, Shield, CheckCircle2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Bell, User, LogOut, Shield, CheckCircle2, CheckCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -16,14 +17,37 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { authService } from "@/lib/services/auth.service"
+import { NotificationService, type Notification } from "@/lib/services/notification.service"
 
 export function DashboardHeader() {
   const router = useRouter()
   const [userName, setUserName] = useState<string | null>(null)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
     // Récupérer le userName depuis localStorage (côté client uniquement)
     setUserName(authService.getUserName())
+  }, [])
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const userId = authService.getUserId()
+      if (!userId) return
+
+      try {
+        const notificationsData = await NotificationService.getNotificationsForUser(Number(userId))
+        setNotifications(notificationsData)
+        setUnreadCount(notificationsData.length)
+      } catch (err) {
+        console.error("Erreur lors du chargement des notifications:", err)
+      }
+    }
+
+    fetchNotifications()
+    // Rafraîchir les notifications toutes les 30 secondes
+    const interval = setInterval(fetchNotifications, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const handleLogout = () => {
@@ -59,12 +83,110 @@ export function DashboardHeader() {
 
       <div className="flex items-center gap-3">
         <ThemeToggle />
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-5 h-5 text-muted-foreground" />
-          <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-emerald-500 text-white border-0">
-            3
-          </Badge>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="w-5 h-5 text-muted-foreground" />
+              {unreadCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-emerald-500 text-white border-0">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuLabel className="flex items-center justify-between">
+              <span>Notifications</span>
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs"
+                  onClick={async (e) => {
+                    e.stopPropagation()
+                    const userId = authService.getUserId()
+                    if (userId) {
+                      try {
+                        await NotificationService.markAllAsSeen(Number(userId))
+                        setNotifications([])
+                        setUnreadCount(0)
+                      } catch (err) {
+                        console.error("Erreur lors du marquage des notifications:", err)
+                      }
+                    }
+                  }}
+                >
+                  <CheckCheck className="mr-1 h-3 w-3" />
+                  Tout marquer comme lu
+                </Button>
+              )}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {notifications.length === 0 ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                Aucune notification
+              </div>
+            ) : (
+              <div className="max-h-96 overflow-y-auto">
+                {notifications.slice(0, 5).map((notification) => (
+                  <DropdownMenuItem
+                    key={notification.id}
+                    className="flex flex-col items-start p-3 cursor-pointer"
+                    onClick={() => router.push("/notifications")}
+                  >
+                    <div className="flex items-center justify-between w-full mb-1">
+                      <span className="text-xs font-medium">
+                        {notification.action === "TRANSACTION_CREATED"
+                          ? "Transaction créée"
+                          : notification.action === "TRANSACTION_VERIFIED_OK"
+                            ? "Transaction vérifiée (OK)"
+                            : "Transaction vérifiée (NOK)"}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 w-5 p-0"
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          try {
+                            await NotificationService.markAsSeen(notification.id)
+                            setNotifications((prev) => prev.filter((n) => n.id !== notification.id))
+                            setUnreadCount((prev) => Math.max(0, prev - 1))
+                          } catch (err) {
+                            console.error("Erreur lors du marquage de la notification:", err)
+                          }
+                        }}
+                      >
+                        <CheckCircle2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      Transaction ID: {notification.transactionId}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+                {notifications.length > 5 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-center justify-center cursor-pointer"
+                      onClick={() => router.push("/notifications")}
+                    >
+                      Voir toutes les notifications ({notifications.length})
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </div>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-center justify-center cursor-pointer"
+              onClick={() => router.push("/notifications")}
+            >
+              Voir toutes les notifications
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

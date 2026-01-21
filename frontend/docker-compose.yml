@@ -1,13 +1,16 @@
-version: '3.8'
+version: "3.9"
 
 services:
   frontend:
-    build: .
-    container_name: frontend
+    image: node:20-alpine
+    container_name: frontend-dev
+    working_dir: /app
     ports:
       - "3000:3000"
     volumes:
       - .:/app
       - /app/node_modules
     environment:
-      - WATCHPACK_POLLING=true
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+    command: npm run dev
