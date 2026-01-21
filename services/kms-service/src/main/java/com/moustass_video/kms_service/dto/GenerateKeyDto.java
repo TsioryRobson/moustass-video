@@ -26,6 +26,10 @@ public class GenerateKeyDto {
     }
 
     public void setValidty(int validity) {
-        this.validity = validity;
+        if(validity <= 0) {
+            this.validity = 1;
+        }else{
+            this.validity = validity;
+        }
     }
 }

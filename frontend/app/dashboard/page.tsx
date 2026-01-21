@@ -1,12 +1,27 @@
+"use client"
+
 import { DashboardHeader } from "@/components/dashboard-header"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { StatsCards } from "@/components/stats-cards"
-// import { RecentMessages } from "@/components/recent-messages"
-import { AuditLogs } from "@/components/audit-logs"
-import { TransactionList } from "@/components/transaction-list"
-import { SecurityStatus } from "@/components/security-status"
+import { CreatedTransactions } from "@/components/created-transactions"
+import { TransactionsToVerify } from "@/components/transactions-to-verify"
+import { getRole } from "@/lib/utils/jwt.utils"
+import { useEffect, useState } from "react"
 
 export default function DashboardPage() {
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const role = getRole()
+    setIsAdmin(role === "ADMIN")
+    setIsLoading(false)
+  }, [])
+
+  if (isLoading) {
+    return null
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
@@ -20,12 +35,12 @@ export default function DashboardPage() {
 
           <StatsCards />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* <RecentMessages /> */}
-            {/* <SecurityStatus /> */}
-          </div>
-          <TransactionList />
-            <AuditLogs />
+          {!isAdmin && (
+            <div className="grid grid-cols-1 gap-6">
+              <CreatedTransactions />
+              <TransactionsToVerify />
+            </div>
+          )}
         </main>
       </div>
     </div>

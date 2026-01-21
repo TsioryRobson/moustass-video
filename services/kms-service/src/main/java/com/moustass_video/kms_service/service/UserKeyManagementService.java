@@ -113,20 +113,14 @@ public class UserKeyManagementService {
     /**
      * Vérifie une signature avec la clé publique d'un utilisateur
      */
-    public boolean verifySignatureWithUserKey(VerifySignDto dto)
+    public boolean verifySignature(VerifySignDto dto)
             throws Exception {
 
-        // Récupérer la clé publique de l'utilisateur
-        UserKeys userKey = userKeyRepository.findByIdAndUserId(dto.getKeyId(), dto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Clé non trouvée ou non autorisée"
-                ));
-
-        // Vérifier avec la clé publique (pas besoin de déchiffrer quoi que ce soit)
+        // Vérifier avec la clé publique
         return signatureService.verifySignature(
                 dto.getFileHash(),
                 dto.getSignature(),
-                userKey.getPublicKey()
+                dto.getPublicKey()
         );
     }
 

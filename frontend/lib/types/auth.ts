@@ -28,6 +28,7 @@ export interface ChangeMdpDto {
 }
 
 export interface UserDto {
+  userId: number; // ID de l'utilisateur (peut être présent dans certaines réponses)
   userName: string;
   email: string;
   role: string;

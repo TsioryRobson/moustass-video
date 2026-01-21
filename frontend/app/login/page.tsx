@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Lock, Eye, EyeOff, Shield, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,16 +11,27 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { authService } from "@/lib/services/auth.service"
+import { isAuthenticated } from "@/lib/utils/jwt.utils"
 
 export default function LoginPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [isChecking, setIsChecking] = useState(true)
   const [formData, setFormData] = useState({
     userName: "",
     mdp: "",
   })
+
+  // Vérifier si l'utilisateur est déjà authentifié
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.push("/dashboard")
+    } else {
+      setIsChecking(false)
+    }
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,6 +63,15 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Afficher un loader pendant la vérification
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-muted-foreground">Vérification...</div>
+      </div>
+    )
   }
 
   return (

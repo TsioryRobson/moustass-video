@@ -7,6 +7,7 @@ import com.daniax.auth_service.dto.LoginUserDto;
 import com.daniax.auth_service.dto.UserDto;
 import com.daniax.auth_service.entity.User;
 import com.daniax.auth_service.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -76,8 +78,27 @@ public class AuthService {
         List<User> temp = userRepository.findAll();
         List<UserDto> result = new ArrayList<>();
         for (User u : temp){
-            result.add(new UserDto(u.getUserName(),u.getEmail(), u.getRole().name()));
+            result.add(new UserDto(u.getId(), u.getUserName(),u.getEmail(), u.getRole().name()));
         }
         return result;
+    }
+
+    public List<UserDto> otherUsers(Long userId){
+        List<User> temp = userRepository.findOtherNonAdminUsers(userId);
+        List<UserDto> result = new ArrayList<>();
+        for (User u : temp){
+            result.add(new UserDto(u.getId(), u.getUserName(),u.getEmail(), u.getRole().name()));
+        }
+        return result;
+    }
+
+    public String userName(Long userId){
+        Optional<User> user = userRepository.findById(userId);
+        if(user.isPresent()){
+            return user.get().getUserName();
+        }else{
+            throw new EntityNotFoundException("User not found with id " + userId);
+        }
+
     }
 }

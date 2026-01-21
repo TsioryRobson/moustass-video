@@ -37,6 +37,17 @@ export const authService = {
     return response.data;
   },
 
+  async getOtherUsers(): Promise<UserDto[]> {
+    const userId = getUserIdUtil();
+    if (!userId) {
+      throw new Error("User ID not found in token");
+    }
+    const response = await api.get<UserDto[]>("/auth/others", {
+      params: { userId },
+    });
+    return response.data;
+  },
+
   logout(): void {
     localStorage.removeItem("token");
   },

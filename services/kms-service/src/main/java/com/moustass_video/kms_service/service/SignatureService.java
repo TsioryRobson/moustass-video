@@ -35,18 +35,22 @@ public class SignatureService {
      */
     public boolean verifySignature(String hashBase64, String signatureBase64, String publicKeyBase64) throws Exception {
 
-        // Décoder la clé publique
-        byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
-        java.security.spec.X509EncodedKeySpec keySpec = new java.security.spec.X509EncodedKeySpec(publicKeyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        PublicKey publicKey = keyFactory.generatePublic(keySpec);
+        try {
+            // Décoder la clé publique
+            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
+            java.security.spec.X509EncodedKeySpec keySpec = new java.security.spec.X509EncodedKeySpec(publicKeyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PublicKey publicKey = keyFactory.generatePublic(keySpec);
 
-        // Vérifier la signature
-        Signature signature = Signature.getInstance("SHA256withRSA");
-        signature.initVerify(publicKey);
-        signature.update(Base64.getDecoder().decode(hashBase64));
+            // Vérifier la signature
+            Signature signature = Signature.getInstance("SHA256withRSA");
+            signature.initVerify(publicKey);
+            signature.update(Base64.getDecoder().decode(hashBase64));
 
-        byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
-        return signature.verify(signatureBytes);
+            byte[] signatureBytes = Base64.getDecoder().decode(signatureBase64);
+            return signature.verify(signatureBytes);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid Base64 public key");
+        }
     }
 }

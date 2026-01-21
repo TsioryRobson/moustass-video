@@ -20,7 +20,6 @@ public class KeyController {
 
     /**
      * Génère une nouvelle paire de clés pour l'utilisateur
-     * POST /api/keys/generate
      */
     @PostMapping("/generate")
     public ResponseEntity<String> generateKeyPair(@RequestBody GenerateKeyDto request) {
@@ -82,7 +81,6 @@ public class KeyController {
 
     /**
      * Signe un fichier avec une clé spécifique
-     * POST /api/keys/sign
      */
     @PostMapping("/sign")
     public ResponseEntity<String> signFile(@RequestBody FileToSignDto dto){
@@ -101,14 +99,13 @@ public class KeyController {
 
     /**
      * Vérifie une signature de fichier
-     * POST /api/keys/verify
      */
     @PostMapping("/verify")
     public ResponseEntity<Boolean> verifySignature(@RequestBody VerifySignDto dto) {
 
         try {
             // Vérifier la signature
-            boolean isValid = keyManagementService.verifySignatureWithUserKey(dto);
+            boolean isValid = keyManagementService.verifySignature(dto);
 
             return new ResponseEntity<>(isValid, HttpStatus.OK);
 
