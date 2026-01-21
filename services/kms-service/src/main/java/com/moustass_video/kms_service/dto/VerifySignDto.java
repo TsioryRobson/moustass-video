@@ -1,26 +1,9 @@
 package com.moustass_video.kms_service.dto;
 
 public class VerifySignDto {
-    private Long userId;
-    private Long keyId;
+    private String publicKey;
     private String fileHash;
     private String signature;
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public Long getKeyId() {
-        return keyId;
-    }
-
-    public void setKeyId(Long keyId) {
-        this.keyId = keyId;
-    }
 
     public String getFileHash() {
         return fileHash;
@@ -36,5 +19,13 @@ public class VerifySignDto {
 
     public void setSignature(String signature) {
         this.signature = signature;
+    }
+
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
     }
 }

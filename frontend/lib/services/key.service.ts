@@ -52,4 +52,19 @@ export const keyService = {
 
     await api.post("/keys/revokekey", revokeData);
   },
+
+  /**
+   * Récupère la liste des clés valides (ACTIVE) d'un utilisateur
+   * @param userId - ID de l'utilisateur (optionnel, sera extrait du token si non fourni)
+   */
+  async listValidKeys(userId?: number): Promise<UserKeys[]> {
+    const targetUserId = userId || getUserId();
+    if (!targetUserId) {
+      throw new Error("User ID not found in token");
+    }
+    const response = await api.get<UserKeys[]>("/keys/getvalidekeys", {
+      params: { userId: targetUserId },
+    });
+    return response.data;
+  },
 };

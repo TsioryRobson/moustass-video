@@ -123,3 +123,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Masquer le loader de compilation par défaut de Next.js */
+#__next-build-watcher,
+[data-nextjs-dialog],
+[data-nextjs-toast],
+#__next-dev-overlay,
+.__next-dev-overlay,
+[data-nextjs-toast-container],
+.nextjs-toast-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Masquer spécifiquement le toast "compiling" de Next.js */
+[data-nextjs-toast] [data-nextjs-toast-content] {
+  display: none !important;
+}

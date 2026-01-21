@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
+import { CustomLoadingBar } from "@/components/custom-loading-bar"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -47,6 +48,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <CustomLoadingBar />
           <Analytics />
         </ThemeProvider>
       </body>

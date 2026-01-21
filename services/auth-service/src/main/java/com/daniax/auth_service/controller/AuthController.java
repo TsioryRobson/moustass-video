@@ -46,6 +46,39 @@ public class AuthController {
         }
     }
 
+    /**
+     * Retourne tous les utilisateurs sauf l'utilisateur donné
+     * et sauf les ADMIN unh
+     */
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/others")
+    public ResponseEntity<?> getOtherUsers(@RequestParam Long userId) {
+        try {
+            return new ResponseEntity<>(authService.otherUsers(userId), HttpStatus.OK);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(
+                    ex.getMessage(),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
+    /**
+     * Retourne le nom d'un user via userId
+     */
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/nameUser")
+    public ResponseEntity<String> getUserName(@RequestParam Long userId) {
+        try {
+            return new ResponseEntity<>(authService.userName(userId), HttpStatus.OK);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(
+                    ex.getMessage(),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterUserDto userDto) {
